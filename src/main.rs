@@ -73,7 +73,7 @@ pub fn main() -> ! {
     // let start_rss = get_resident_set_size();
     rustc_driver::init_rustc_env_logger();
     signal_handler::install();
-    let mut callbacks = rustc_driver::TimePassesCallbacks::default();
+    let mut callbacks = RutCallbacks{};
     rustc_driver::install_ice_hook();
     let exit_code = rustc_driver::catch_with_exit_code(|| {
         let args = env::args_os()
@@ -105,10 +105,10 @@ impl rustc_driver::Callbacks for RutCallbacks {
     fn after_expansion<'tcx>(
         &mut self,
         _compiler: &interface::Compiler,
-        _queries: &'tcx rustc_interface::Queries<'tcx>,
+        queries: &'tcx rustc_interface::Queries<'tcx>,
     ) -> Compilation {
-        let mut session = _compiler.session();
-        let mut parse_sess = &session.parse_sess;
+        let krate = queries.parse().expect("should've made it").peek_mut();
+        eprintln!("Got a crate: {:?}", krate);
         Compilation::Continue
     }
 }
